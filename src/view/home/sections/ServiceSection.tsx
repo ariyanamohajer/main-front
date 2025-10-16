@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { CheckCircle } from "lucide-react";
 
 // Images (your provided paths)
 import ServicePhone2 from "@/assets/images/image-service.svg";
@@ -68,6 +67,13 @@ function ServiceCard({
 
 /* --------------------------- Phone Mockup --------------------------- */
 function PhoneMock() {
+  const options = [
+    "خرید سیم‌کارت خارجی فیزیکی",
+    "شارژ سیم‌کارت خارجی یک‌ماهه + برداشت",
+    "شارژ سیم‌کارت خارجی سه‌ماهه + برداشت",
+    "شارژ سیم‌کارت خارجی موقت",
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -76,7 +82,7 @@ function PhoneMock() {
       transition={{ duration: 0.45, delay: 0.05 }}
       className="mx-auto w-[300px] sm:w-[330px] md:w-[260px]"
     >
-      <div className="relative rounded-[2rem] bg-black p-2 shadow-2xl ring-1 ring-black/10">
+      <div className="relative rounded-[2rem] bg-black px-1 py-2 shadow-2xl ring-1 ring-black/10">
         {/* Notch */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 h-6 w-28 rounded-b-2xl bg-black" />
         {/* Screen */}
@@ -89,35 +95,19 @@ function PhoneMock() {
 
           <p className="text-sm mb-3 text-right">یک گزینه را انتخاب کنید.</p>
 
-          <RadioGroup defaultValue="physical" className="space-y-3" dir="rtl">
-            <div className="flex items-center gap-2">
-              <RadioGroupItem id="opt-1" value="physical" />
-              <Label htmlFor="opt-1" className="cursor-pointer">
-                خرید سیم‌کارت خارجی فیزیکی
-              </Label>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <RadioGroupItem id="opt-2" value="1m" />
-              <Label htmlFor="opt-2" className="cursor-pointer">
-                شارژ سیم‌کارت خارجی یک‌ماهه + برداشت
-              </Label>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <RadioGroupItem id="opt-3" value="3m" />
-              <Label htmlFor="opt-3" className="cursor-pointer">
-                شارژ سیم‌کارت خارجی سه‌ماهه + برداشت
-              </Label>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <RadioGroupItem id="opt-4" value="temp" />
-              <Label htmlFor="opt-4" className="cursor-pointer">
-                شارژ سیم‌کارت خارجی موقت
-              </Label>
-            </div>
-          </RadioGroup>
+          <div className="space-y-2" dir="rtl">
+            {options.map((label) => (
+              <div
+                key={label}
+                className="flex flex-row-reverse items-center gap-3 rounded-xl border border-border/60 bg-muted/40 px-3 py-2 shadow-sm transition hover:bg-muted/70 min-h-[52px]"
+              >
+                <span className="flex-1 text-sm font-medium leading-6 text-right text-foreground">
+                  {label}
+                </span>
+                <CheckCircle className="size-6 text-primary shrink-0" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </motion.div>

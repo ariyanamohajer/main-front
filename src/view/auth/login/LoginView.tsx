@@ -5,8 +5,8 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link } from "react-router-dom";
-import { Phone } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Headset, KeyRound, Phone, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAuth } from "@/context";
@@ -14,6 +14,14 @@ import { useLogin, useVerifyCode } from "@/hooks/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OTPInput } from "@/components/ui/otp-input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -40,23 +48,13 @@ const STORAGE_KEY = "telecom_login_state";
 //   window.location.assign(PANEL_BASE_URL);
 // };
 
-const params = new URLSearchParams(window.location.search);
-const redirect = params.get("redirect");
-
-const isSafeSameSite = (url: string) => {
-  try {
-    const u = new URL(url);
-    return u.hostname.endsWith("arianamohajer.ir"); // prevent open redirects
-  } catch {
-    return false;
-  }
-};
-
 function LoginView() {
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const [otpCode, setOtpCode] = useState("");
   const [password, setPassword] = useState("");
+  const [isRegisterDialogOpen, setIsRegisterDialogOpen] = useState(false);
   const [loginState, setLoginState] = useState<LoginState>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -163,6 +161,22 @@ function LoginView() {
     loginMutation.mutate(loginState.formData);
   };
 
+  const whatsappNumber = "+989910395938";
+
+  const openWhatsAppInNewTab = () => {
+    const url = `https://web.whatsapp.com/send?phone=${whatsappNumber}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    // if (!newWindow) {
+    //   window.location.href = url;
+    // }
+    setIsRegisterDialogOpen(false);
+  };
+
+  const handleDirectRegister = () => {
+    setIsRegisterDialogOpen(false);
+    navigate("/auth/register");
+  };
+
   useEffect(() => {
     return () => {
       try {
@@ -213,7 +227,10 @@ function LoginView() {
       </div>
 
       <Form {...phoneForm}>
-        <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-6">
+        <form
+          onSubmit={phoneForm.handleSubmit(onPhoneSubmit)}
+          className="space-y-6"
+        >
           <FormField
             control={phoneForm.control}
             name="phone"
@@ -224,14 +241,23 @@ function LoginView() {
                   شماره تلفن همراه
                 </FormLabel>
                 <FormControl>
-                  <Input type="tel" placeholder="۰۹۱۲۱۲۳۴۵۶۷" {...field} className="text-right" />
+                  <Input
+                    type="tel"
+                    placeholder="۰۹۱۲۱۲۳۴۵۶۷"
+                    {...field}
+                    className="text-right"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={loginMutation.isPending}>
+          <Button
+            type="submit"
+            className="w-full h-11 text-base font-semibold"
+            disabled={loginMutation.isPending}
+          >
             {loginMutation.isPending ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -245,22 +271,100 @@ function LoginView() {
           <div className="flex flex-col gap-2 items-center pt-4 border-t border-border">
             <p className="text-muted-foreground text-sm">
               حساب کاربری ندارید؟{" "}
-              <Link to="/auth/register" className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline transition-colors">
+              <button
+                type="button"
+                onClick={() => setIsRegisterDialogOpen(true)}
+                className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline transition-colors"
+              >
                 ثبت نام
-              </Link>
+              </button>
             </p>
             <p className="text-muted-foreground text-sm">
               رمز عبور خود را فراموش کردید؟{" "}
-              <Link to="/auth/forget-pass" className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline transition-colors">
+              <Link
+                to="/auth/forget-pass"
+                className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline transition-colors"
+              >
                 فراموشی رمز عبور
               </Link>
             </p>
           </div>
         </form>
       </Form>
+
+      <Dialog
+        open={isRegisterDialogOpen}
+        onOpenChange={setIsRegisterDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold text-right">
+              روش ثبت‌نام خود را انتخاب کنید
+            </DialogTitle>
+            <DialogDescription className="text-md font-semibold text-right">
+              برای ایجاد حساب کاربری یکی از گزینه‌های زیر را انتخاب کنید.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-3 pt-2">
+            <Button
+              size="lg"
+              className="justify-between"
+              onClick={handleDirectRegister}
+            >
+              <span className="flex items-center gap-3">
+                <UserPlus className="size-5" />
+                ثبت نام آنلاین
+              </span>
+              <span className="text-xs text-primary-foreground/80">
+                تکمیل فرم در کمتر از یک دقیقه
+              </span>
+            </Button>
+
+            <Button
+              size="lg"
+              variant="outline"
+              className="justify-between"
+              onClick={openWhatsAppInNewTab}
+            >
+              <span className="flex items-center gap-3">
+                <Headset className="size-5" />
+                درخواست عضویت از طریق پشتیبانی
+              </span>
+              <span className="text-xs text-muted-foreground">
+                تماس سریع در واتس‌اپ
+              </span>
+            </Button>
+
+            <Button
+              size="lg"
+              variant="outline"
+              className="justify-between"
+              onClick={openWhatsAppInNewTab}
+            >
+              <span className="flex items-center gap-3">
+                <KeyRound className="size-5" />
+                درخواست نام کاربری و رمز عبور
+              </span>
+              <span className="text-xs text-muted-foreground">
+                دریافت اطلاعات ورود از پشتیبانی
+              </span>
+            </Button>
+          </div>
+
+          <DialogFooter className="sm:justify-start">
+            <Button
+              variant="ghost"
+              onClick={() => setIsRegisterDialogOpen(false)}
+              className="w-full sm:w-auto"
+            >
+              بازگشت
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
 export default LoginView;
-
