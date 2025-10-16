@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Phone } from "lucide-react";
 import { toast } from "sonner";
 
@@ -203,7 +203,9 @@ function ForgetPassView() {
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-foreground mb-2">فراموشی رمز عبور</h1>
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          فراموشی رمز عبور
+        </h1>
         <p className="text-muted-foreground text-sm max-w-xs mx-auto">
           برای تغییر رمز عبور شماره تلفن همراه خود را وارد کنید
         </p>
@@ -253,6 +255,24 @@ function ForgetPassView() {
               "ارسال کد تایید"
             )}
           </Button>
+          <div className="text-center pt-4 border-t border-border">
+            <p className="text-muted-foreground text-sm">
+              <Link
+                to="/auth/login"
+                className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline transition-colors"
+              >
+                ورود
+              </Link>
+            </p>
+            <p className="text-muted-foreground text-sm">
+              <Link
+                to="/auth/register"
+                className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline transition-colors"
+              >
+                ثبت نام
+              </Link>
+            </p>
+          </div>
         </form>
       </Form>
     </div>

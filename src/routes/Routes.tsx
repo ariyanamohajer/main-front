@@ -13,6 +13,7 @@ const ForgetPassPage = lazy(
 const HomePage = lazy(() => import("@/pages/home/HomePage"));
 const AboutUsPage = lazy(() => import("@/pages/about/AboutUsPage"));
 const PrivacyPage = lazy(() => import("@/pages/privacy/PrivacyPage"));
+const NotFoundPage = lazy(() => import("@/pages/404/404"));
 // const ProductsPage = lazy(() => import("@/pages/products/ProductsPage"));
 // const ProductDetailPage = lazy(
 //   () => import("@/pages/products/ProductDetailPage")
@@ -126,6 +127,10 @@ export const router = createBrowserRouter([
             element: <ForgetPassPage />,
           },
         ],
+      },
+      {
+        path: "*",
+        element: <NotFoundPage />,
       },
     ],
   },
