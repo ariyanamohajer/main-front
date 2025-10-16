@@ -1,7 +1,11 @@
+// 
+
+// src/pages/auth/LoginView.tsx
+// src/pages/auth/LoginView.tsx
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Phone } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,59 +33,62 @@ interface LoginState {
 }
 
 const STORAGE_KEY = "telecom_login_state";
+// const PANEL_BASE_URL = (import.meta.env.VITE_PANEL_URL ?? "https://panel.arianamohajer.ir").replace(/\/+$/, "");
+
+// // Always go to panel root (no trailing slash issues)
+// const toPanelRoot = () => {
+//   window.location.assign(PANEL_BASE_URL);
+// };
+
+const params = new URLSearchParams(window.location.search);
+const redirect = params.get("redirect");
+
+const isSafeSameSite = (url: string) => {
+  try {
+    const u = new URL(url);
+    return u.hostname.endsWith("arianamohajer.ir"); // prevent open redirects
+  } catch {
+    return false;
+  }
+};
 
 function LoginView() {
-  const navigate = useNavigate();
-  // const location = useLocation();
   const { login } = useAuth();
 
   const [otpCode, setOtpCode] = useState("");
   const [password, setPassword] = useState("");
   const [loginState, setLoginState] = useState<LoginState>(() => {
-    // Try to restore state from localStorage on refresh
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Ensure we have all required properties
         return {
           step: parsed.step || "phone",
-          formData: {
-            phone: parsed.formData?.phone || "",
-          },
+          formData: { phone: parsed.formData?.phone || "" },
           loginResult: parsed.loginResult || null,
         };
       }
     } catch (error) {
       console.warn("Failed to restore login state", error);
-      localStorage.removeItem(STORAGE_KEY); // Clear corrupted data
+      localStorage.removeItem(STORAGE_KEY);
     }
-
-    return {
-      step: "phone",
-      formData: { phone: "" },
-      loginResult: null,
-    };
+    return { step: "phone", formData: { phone: "" }, loginResult: null };
   });
 
-  // Save state to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(loginState));
   }, [loginState]);
 
-  // Phone form
   const phoneForm = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: loginState.formData,
   });
 
-  // Login mutation (phone step)
   const loginMutation = useLogin({
     onSuccess: (data: LoginResponse) => {
       toast.success("کد تایید با موفقیت ارسال شد", {
         description: `کد تایید به شماره ${data.result.phone} ارسال شد`,
       });
-
       setLoginState((prev) => ({
         ...prev,
         step: "verify",
@@ -95,17 +102,15 @@ function LoginView() {
     },
   });
 
-  // Verify code mutation (OTP step)
   const verifyCodeMutation = useVerifyCode({
     onSuccess: (data) => {
       toast.success("ورود با موفقیت انجام شد", {
-        description: "به صفحه اصلی منتقل می‌شوید",
+        description: "به پنل منتقل می‌شوید",
       });
 
-      // Create user object for AuthContext
       const userData: User = {
         phone: loginState.formData.phone,
-        fName: undefined, // Login doesn't provide name info
+        fName: undefined,
         lName: undefined,
         token: data.result.token,
         refreshToken: data.result.refreshToken,
@@ -113,18 +118,17 @@ function LoginView() {
         refreshTokenExpiration: data.result.refreshTokenExpiration,
       };
 
-      // Login user through AuthContext
       login(userData);
-
-      // Clear login state
       localStorage.removeItem(STORAGE_KEY);
 
-      // Get the original destination from state, or default to home
-      // const from =
-      //   (location.state as { from?: { pathname: string } })?.from?.pathname ||
-      //   "/products";
-      // navigate(from, { replace: true });
-      navigate("/products", { replace: true });
+      // ✅ Always go to panel root
+      // window.location.assign(
+      //   redirect && isSafeSameSite(redirect)
+      //     ? redirect
+      //     : "https://panel.arianamohajer.ir"
+      // );
+
+      window.location.assign("http://localhost:4001")
     },
     onError: (error: Error) => {
       toast.error("کد تایید نادرست است", {
@@ -134,54 +138,44 @@ function LoginView() {
     },
   });
 
-  // Handle phone form submission
   const onPhoneSubmit = (data: LoginFormData) => {
     setLoginState((prev) => ({ ...prev, formData: data }));
     loginMutation.mutate(data);
   };
 
-  // Handle OTP completion
   const onOTPComplete = (code: string, passwordValue?: string) => {
     if (code.length === 5 && passwordValue && passwordValue.trim()) {
       verifyCodeMutation.mutate({
         phone: loginState.formData.phone,
         code,
-        password: passwordValue, // Use password from OTP input
+        password: passwordValue,
       });
     }
   };
 
-  // Handle back to phone step
   const handleBackToPhone = () => {
     setLoginState((prev) => ({ ...prev, step: "phone" }));
     setOtpCode("");
     setPassword("");
   };
 
-  // Handle resend OTP
   const handleResendOTP = () => {
     loginMutation.mutate(loginState.formData);
   };
 
-  // Clear login state on unmount only if on phone step
   useEffect(() => {
     return () => {
-      // Only clear if user is still on phone step (not in OTP step)
       try {
-        const currentState = JSON.parse(
-          localStorage.getItem(STORAGE_KEY) || '{"step":"phone"}'
-        );
+        const currentState = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"step":"phone"}');
         if (currentState.step === "phone") {
           localStorage.removeItem(STORAGE_KEY);
         }
       } catch (error) {
-        // If there's an error parsing, don't clear
         console.warn("Error parsing login state on unmount:", error);
       }
     };
   }, []);
 
-  // Render OTP verification step
   if (loginState.step === "verify") {
     return (
       <div className="space-y-6">
@@ -209,10 +203,8 @@ function LoginView() {
     );
   }
 
-  // Render phone input step
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-foreground mb-2">ورود</h1>
         <p className="text-muted-foreground text-sm max-w-xs mx-auto">
@@ -220,13 +212,8 @@ function LoginView() {
         </p>
       </div>
 
-      {/* Form */}
       <Form {...phoneForm}>
-        <form
-          onSubmit={phoneForm.handleSubmit(onPhoneSubmit)}
-          className="space-y-6"
-        >
-          {/* Phone Field */}
+        <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-6">
           <FormField
             control={phoneForm.control}
             name="phone"
@@ -237,24 +224,14 @@ function LoginView() {
                   شماره تلفن همراه
                 </FormLabel>
                 <FormControl>
-                  <Input
-                    type="tel"
-                    placeholder="۰۹۱۲۱۲۳۴۵۶۷"
-                    {...field}
-                    className="text-right"
-                  />
+                  <Input type="tel" placeholder="۰۹۱۲۱۲۳۴۵۶۷" {...field} className="text-right" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            className="w-full h-11 text-base font-semibold"
-            disabled={loginMutation.isPending}
-          >
+          <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={loginMutation.isPending}>
             {loginMutation.isPending ? (
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
@@ -265,24 +242,17 @@ function LoginView() {
             )}
           </Button>
 
-          {/* Register Link */}
           <div className="flex flex-col gap-2 items-center pt-4 border-t border-border">
             <p className="text-muted-foreground text-sm">
               حساب کاربری ندارید؟{" "}
-              <Link
-                to="/auth/register"
-                className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline transition-colors"
-              >
+              <Link to="/auth/register" className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline transition-colors">
                 ثبت نام
               </Link>
             </p>
             <p className="text-muted-foreground text-sm">
-                رمز عبور خود را فراموش کردید؟{" "}
-              <Link
-                to="/auth/forget-pass"
-                className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline transition-colors"
-              >
-                 فراموشی رمز عبور
+              رمز عبور خود را فراموش کردید؟{" "}
+              <Link to="/auth/forget-pass" className="text-primary hover:text-primary/80 font-medium underline-offset-4 hover:underline transition-colors">
+                فراموشی رمز عبور
               </Link>
             </p>
           </div>
@@ -293,3 +263,4 @@ function LoginView() {
 }
 
 export default LoginView;
+

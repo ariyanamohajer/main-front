@@ -1,11 +1,13 @@
+// src/pages/auth/RegisterView.tsx
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Eye, EyeOff, User, Phone, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 import { useRegister, useVerifyCode } from "@/hooks/auth";
+import { useAuth } from "@/context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { OTPInput } from "@/components/ui/otp-input";
@@ -18,7 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { registerSchema, type RegisterFormData } from "@/validation";
-import type { RegisterResult } from "@/types";
+import type { RegisterResult, VerifyCodeResponse } from "@/types";
 
 interface RegistrationState {
   step: "register" | "verify";
@@ -27,19 +29,25 @@ interface RegistrationState {
 }
 
 const STORAGE_KEY = "telecom_registration_state";
+// const PANEL_BASE_URL = (
+//   import.meta.env.VITE_PANEL_URL ?? "https://panel.arianamohajer.ir"
+// ).replace(/\/+$/, "");
+
+// // Always go to panel root (no query/path)
+// const toPanelRoot = () => {
+//   window.location.assign(PANEL_BASE_URL);
+// };
 
 function RegisterView() {
-  const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [registrationState, setRegistrationState] = useState<RegistrationState>(
     () => {
-      // Try to restore state from localStorage on refresh
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
-          // Ensure we have all required properties
           return {
             step: parsed.step || "register",
             formData: {
@@ -53,9 +61,8 @@ function RegisterView() {
         }
       } catch (error) {
         console.warn("Failed to restore registration state", error);
-        localStorage.removeItem(STORAGE_KEY); // Clear corrupted data
+        localStorage.removeItem(STORAGE_KEY);
       }
-
       return {
         step: "register",
         formData: { phone: "", fName: "", lName: "", password: "" },
@@ -64,24 +71,20 @@ function RegisterView() {
     }
   );
 
-  // Save state to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(registrationState));
   }, [registrationState]);
 
-  // Register form
   const registerForm = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: registrationState.formData,
   });
 
-  // Register mutation
   const registerMutation = useRegister({
     onSuccess: (data) => {
       toast.success("کد تایید با موفقیت ارسال شد", {
         description: `کد تایید به شماره ${data.result.phone} ارسال شد`,
       });
-
       setRegistrationState((prev) => ({
         ...prev,
         step: "verify",
@@ -90,23 +93,32 @@ function RegisterView() {
     },
     onError: (error) => {
       toast.error("خطا در ثبت نام", {
-        description: error?.message || "لطفاً دوباره تلاش کنید",
+        description: (error as Error)?.message || "لطفاً دوباره تلاش کنید",
       });
     },
   });
 
-  // Verify code mutation
   const verifyCodeMutation = useVerifyCode({
-    onSuccess: () => {
+    onSuccess: (data: VerifyCodeResponse) => {
       toast.success("تایید با موفقیت انجام شد", {
-        description: "به صفحه اصلی منتقل می‌شوید",
+        description: "در حال انتقال...",
       });
 
-      // Clear registration state
+      // auto-login after register verification
+      login({
+        phone: registrationState.formData.phone,
+        fName: registrationState.formData.fName,
+        lName: registrationState.formData.lName,
+        token: data.result.token,
+        refreshToken: data.result.refreshToken,
+        expiration: data.result.expiration,
+        refreshTokenExpiration: data.result.refreshTokenExpiration,
+      });
+
       localStorage.removeItem(STORAGE_KEY);
 
-      // Navigate to home page
-      navigate("/", { replace: true });
+      // ✅ Always go to panel root
+      window.location.assign('http://localhost:4001')
     },
     onError: (error: Error) => {
       toast.error("کد تایید نادرست است", {
@@ -116,39 +128,32 @@ function RegisterView() {
     },
   });
 
-  // Handle registration form submission
   const onRegisterSubmit = (data: RegisterFormData) => {
     setRegistrationState((prev) => ({ ...prev, formData: data }));
     registerMutation.mutate(data);
   };
 
-  // Handle OTP completion
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const onOTPComplete = (code: string) => {
     if (code.length === 5 && registrationState.registerResult) {
       verifyCodeMutation.mutate({
         phone: registrationState.formData.phone,
         code,
-        password: registrationState.formData.password, // Use password from registration form
+        password: registrationState.formData.password,
       });
     }
   };
 
-  // Handle back to registration
   const handleBackToRegister = () => {
     setRegistrationState((prev) => ({ ...prev, step: "register" }));
     setOtpCode("");
   };
 
-  // Handle resend OTP
   const handleResendOTP = () => {
     registerMutation.mutate(registrationState.formData);
   };
 
-  // Clear registration state on unmount only if on register step
   useEffect(() => {
     return () => {
-      // Only clear if user is still on register step (not in OTP step)
       try {
         const currentState = JSON.parse(
           localStorage.getItem(STORAGE_KEY) || '{"step":"register"}'
@@ -157,13 +162,11 @@ function RegisterView() {
           localStorage.removeItem(STORAGE_KEY);
         }
       } catch (error) {
-        // If there's an error parsing, don't clear
         console.warn("Error parsing registration state on unmount:", error);
       }
     };
   }, []);
 
-  // Render OTP verification step
   if (registrationState.step === "verify") {
     return (
       <div className="space-y-6">
@@ -186,10 +189,8 @@ function RegisterView() {
     );
   }
 
-  // Render registration form
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-foreground mb-2">ثبت نام</h1>
         <p className="text-muted-foreground text-sm max-w-xs mx-auto">
@@ -197,13 +198,11 @@ function RegisterView() {
         </p>
       </div>
 
-      {/* Form */}
       <Form {...registerForm}>
         <form
           onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
           className="space-y-6"
         >
-          {/* Name Fields Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               control={registerForm.control}
@@ -225,7 +224,6 @@ function RegisterView() {
                 </FormItem>
               )}
             />
-
             <FormField
               control={registerForm.control}
               name="lName"
@@ -248,7 +246,6 @@ function RegisterView() {
             />
           </div>
 
-          {/* Phone Field */}
           <FormField
             control={registerForm.control}
             name="phone"
@@ -271,7 +268,6 @@ function RegisterView() {
             )}
           />
 
-          {/* Password Field */}
           <FormField
             control={registerForm.control}
             name="password"
@@ -309,7 +305,6 @@ function RegisterView() {
             )}
           />
 
-          {/* Submit Button */}
           <Button
             type="submit"
             className="w-full h-11 text-base font-semibold"
@@ -325,7 +320,6 @@ function RegisterView() {
             )}
           </Button>
 
-          {/* Login Link */}
           <div className="text-center pt-4 border-t border-border">
             <p className="text-muted-foreground text-sm">
               قبلاً حساب کاربری دارید؟{" "}

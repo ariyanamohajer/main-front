@@ -1,3 +1,7 @@
+// 
+
+
+// src/context/auth.tsx
 import { createContext, useEffect, useState, type ReactNode } from "react";
 import type { User } from "@/types";
 import {
@@ -7,7 +11,7 @@ import {
   storeUserData,
   clearTokenData,
   clearUserData,
-  isRefreshTokenExpired,
+  getAccessToken, // ← presence of access token = logged-in (session-only)
 } from "@/lib/cookie-utils";
 
 interface AuthContextType {
@@ -32,7 +36,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing token on mount
+  // Hydrate from cookies on mount (no client-side expiry checks)
   useEffect(() => {
     const checkAuthStatus = () => {
       try {
@@ -40,25 +44,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const userData = getUserData();
 
         if (tokenData && userData) {
-          // Check if tokens are still valid
-          if (!isRefreshTokenExpired()) {
-            const fullUser: User = {
-              ...userData,
-              token: tokenData.token,
-              refreshToken: tokenData.refreshToken,
-              expiration: tokenData.expiration,
-              refreshTokenExpiration: tokenData.refreshTokenExpiration,
-            };
-            setUser(fullUser);
-          } else {
-            // Tokens are expired, clear all data
-            clearTokenData();
-            clearUserData();
-          }
+          const fullUser: User = {
+            phone: userData.phone,
+            fName: userData.fName,
+            lName: userData.lName,
+            token: tokenData.token,
+            refreshToken: tokenData.refreshToken,
+            // These may be undefined for session-only cookies — that's fine:
+            expiration: tokenData.expiration,
+            refreshTokenExpiration: tokenData.refreshTokenExpiration,
+          };
+          setUser(fullUser);
+        } else {
+          // Missing pieces → clear any leftovers
+          clearTokenData();
+          clearUserData();
         }
       } catch (error) {
         console.error("Error checking auth status:", error);
-        // Clear invalid data
         clearTokenData();
         clearUserData();
       } finally {
@@ -69,18 +72,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     checkAuthStatus();
   }, []);
 
-  // Login function
+  // Login function (persists tokens as session-only)
   const login = (userData: User) => {
     try {
-      // Store token data in cookies
-      storeTokenData({
-        token: userData.token,
-        refreshToken: userData.refreshToken,
-        expiration: userData.expiration,
-        refreshTokenExpiration: userData.refreshTokenExpiration,
-      });
+      // 🔐 session-only tokens => no Expires set on cookies
+      storeTokenData(
+        {
+          token: userData.token,
+          refreshToken: userData.refreshToken,
+          expiration: userData.expiration, // optional (ignored if sessionOnly)
+          refreshTokenExpiration: userData.refreshTokenExpiration, // optional
+        },
+        { sessionOnly: true }
+      );
 
-      // Store user data in cookies (non-sensitive data)
+      // Non-sensitive profile bits for quick hydration
       storeUserData({
         phone: userData.phone,
         fName: userData.fName,
@@ -100,7 +106,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       clearTokenData();
       clearUserData();
       setUser(null);
-      location.reload()
+      location.reload();
     } catch (error) {
       console.error("Error during logout:", error);
     }
@@ -108,7 +114,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const value: AuthContextType = {
     user,
-    isAuthenticated: !!user && !isRefreshTokenExpired(),
+    // Auth state is true only if we have a hydrated user AND a token present
+    isAuthenticated: !!user && !!getAccessToken(),
     isLoading,
     login,
     logout,

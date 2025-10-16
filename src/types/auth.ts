@@ -111,9 +111,10 @@ export interface ApiResponse<T> {
 export interface TokenData {
   token: string;
   refreshToken: string;
-  expiration: string;
-  refreshTokenExpiration: string;
+  expiration: string; // required
+  refreshTokenExpiration: string; // required
 }
+
 
 export interface UpdatePersonalInfoRequest {
   fName: string;
