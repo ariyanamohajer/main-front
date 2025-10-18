@@ -118,7 +118,7 @@ function RegisterView() {
       localStorage.removeItem(STORAGE_KEY);
 
       // ✅ Always go to panel root
-      window.location.assign('http://localhost:4001')
+      window.location.assign("https://panel.arianamohajer.ir");
     },
     onError: (error: Error) => {
       toast.error("کد تایید نادرست است", {

@@ -4,6 +4,7 @@ export type NavRoute = {
   key: string;
   label: string;
   to: string;
+  external?: boolean;
 };
 export type NavSection = {
   type: "section";
@@ -17,6 +18,18 @@ export const NAV_ITEMS: NavItem[] = [
   { type: "route", key: "home", label: "خانه", to: "/" },
   { type: "route", key: "about", label: "درباره ما", to: "/about" },
   { type: "route", key: "privacy", label: "حریم خصوصی", to: "/privacy" },
-  { type: "route", key: "products", label: "محصولات", to: "/products" },
-  { type: "route", key: "sim", label: "سیم کارت", to: "/sim" },
+  {
+    type: "route",
+    key: "products",
+    label: "محصولات",
+    to: "https://panel.arianamohajer.ir/products",
+    external: true,
+  },
+  {
+    type: "route",
+    key: "sim",
+    label: "سیم کارت",
+    to: "https://panel.arianamohajer.ir/sim",
+    external: true,
+  },
 ];

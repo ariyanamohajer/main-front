@@ -126,7 +126,8 @@ function LoginView() {
       //     : "https://panel.arianamohajer.ir"
       // );
 
-      window.location.assign("http://localhost:4001")
+      window.location.assign("https://panel.arianamohajer.ir");
+      // window.location.assign("http://localhost:4001")
     },
     onError: (error: Error) => {
       toast.error("کد تایید نادرست است", {
@@ -296,7 +297,7 @@ function LoginView() {
         open={isRegisterDialogOpen}
         onOpenChange={setIsRegisterDialogOpen}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-right">
               روش ثبت‌نام خود را انتخاب کنید
@@ -309,14 +310,14 @@ function LoginView() {
           <div className="grid gap-3 pt-2">
             <Button
               size="lg"
-              className="justify-between"
+              className="w-full h-auto flex-col items-stretch justify-start gap-3 whitespace-normal px-4 py-4 text-right sm:flex-row sm:items-center sm:justify-between"
               onClick={handleDirectRegister}
             >
-              <span className="flex items-center gap-3">
+              <span className="flex items-center gap-3 justify-center sm:justify-start">
                 <UserPlus className="size-5" />
                 ثبت نام آنلاین
               </span>
-              <span className="text-xs text-primary-foreground/80">
+              <span className="text-xs text-primary-foreground/80 text-right sm:text-left w-full sm:w-auto">
                 تکمیل فرم در کمتر از یک دقیقه
               </span>
             </Button>
@@ -324,14 +325,14 @@ function LoginView() {
             <Button
               size="lg"
               variant="outline"
-              className="justify-between"
+              className="w-full h-auto flex-col items-stretch justify-start gap-3 whitespace-normal px-4 py-4 text-right sm:flex-row sm:items-center sm:justify-between"
               onClick={openWhatsAppInNewTab}
             >
-              <span className="flex items-center gap-3">
+              <span className="flex items-center gap-3 justify-center sm:justify-start">
                 <Headset className="size-5" />
                 درخواست عضویت از طریق پشتیبانی
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground text-right sm:text-left w-full sm:w-auto">
                 تماس سریع در واتس‌اپ
               </span>
             </Button>
@@ -339,14 +340,14 @@ function LoginView() {
             <Button
               size="lg"
               variant="outline"
-              className="justify-between"
+              className="w-full h-auto flex-col items-stretch justify-start gap-3 whitespace-normal px-4 py-4 text-right sm:flex-row sm:items-center sm:justify-between"
               onClick={openWhatsAppInNewTab}
             >
-              <span className="flex items-center gap-3">
+              <span className="flex items-center gap-3 justify-center sm:justify-start">
                 <KeyRound className="size-5" />
                 درخواست نام کاربری و رمز عبور
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-muted-foreground text-right sm:text-left w-full sm:w-auto">
                 دریافت اطلاعات ورود از پشتیبانی
               </span>
             </Button>

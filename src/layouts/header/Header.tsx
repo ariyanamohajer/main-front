@@ -4,7 +4,7 @@ import MobileNav from "./components/MobileNav"; // bottom bar
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context";
 import { useGetUser } from "@/hooks/auth";
-import { LogIn, LogOut, UserPlus, Wallet, ListOrdered, UserPen } from "lucide-react";
+import { LayoutDashboard, LogIn, LogOut, UserPlus } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -17,19 +17,16 @@ import {
 import { NAV_ITEMS } from "@/constant/nav.config";
 import { SectionLink } from "@/components/common/SectionLink";
 import type { UserInfo } from "@/types";
-import { useWalletBalance } from "@/hooks";
-import { formatPrice } from "@/lib/utils";
 
 function UserDropdown({
   profile,
   onLogout,
-  showWallet = true, // desktop: true, mobile: false
 }: {
   profile?: UserInfo;
   onLogout: () => void;
-  showWallet?: boolean;
 }) {
-  const {data, isPending, isError}  = useWalletBalance();
+  const PANEL_URL = "https://panel.arianamohajer.ir";
+
   return (
     <DropdownMenu modal={false} dir="rtl">
       <DropdownMenuTrigger asChild>
@@ -71,46 +68,17 @@ function UserDropdown({
           </DropdownMenuItem>
         )}
 
-        {/* Wallet: desktop only (hidden on mobile) */}
-        {showWallet && (
-          <>
-            <DropdownMenuSeparator className="hidden md:block bg-[color:var(--border)]" />
-            <Link to="/wallet" className="hidden md:block">
-              <DropdownMenuItem className="cursor-pointer px-3 py-2 hover:bg-[color:var(--primary)]/10 hover:text-[color:var(--primary)] transition-colors">
-                  <div className="flex items-center gap-2">
-                    <Wallet className="w-4 h-4 mr-2" />
-                    <span className="text-muted-foreground">کیف پول</span>
-                  </div>
-
-                  {/* Right side (amount or loading/error) */}
-                  <div className="font-medium">
-                    {isPending ? (
-                      // Skeleton loader
-                      <div className="w-16 h-4 bg-muted-foreground/20 rounded animate-pulse" />
-                    ) : isError ? (
-                      <span className="text-destructive">خطا</span>
-                    ) : (
-                      <span>
-                        {formatPrice(data?.result?.totalAmount)} تومان
-                      </span>
-                    )}
-                </div>
-              </DropdownMenuItem>
-            </Link>
-            <Link to="/order" className="hidden md:block">
-              <DropdownMenuItem className="cursor-pointer px-3 py-2 hover:bg-[color:var(--primary)]/10 hover:text-[color:var(--primary)] transition-colors">
-                <ListOrdered className="h-4 w-4 mr-2" />
-                سفارش ها
-              </DropdownMenuItem>
-            </Link>
-            <Link to="/user" className="hidden md:block">
-              <DropdownMenuItem className="cursor-pointer px-3 py-2 hover:bg-[color:var(--primary)]/10 hover:text-[color:var(--primary)] transition-colors">
-                <UserPen className="h-4 w-4 mr-2" />
-                ویرایش پروفایل
-              </DropdownMenuItem>
-            </Link>
-          </>
+        {(profile?.phone || profile?.role) && (
+          <DropdownMenuSeparator className="bg-[color:var(--border)]" />
         )}
+
+        <DropdownMenuItem
+          className="cursor-pointer px-3 py-2 hover:bg-[color:var(--primary)]/10 hover:text-[color:var(--primary)] transition-colors"
+          onSelect={() => window.location.assign(PANEL_URL)}
+        >
+          <LayoutDashboard className="h-4 w-4 mr-2" />
+          پنل کاربری
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator className="bg-[color:var(--border)]" />
 
@@ -170,7 +138,6 @@ function Header() {
                 <UserDropdown
                   profile={profile}
                   onLogout={logout}
-                  showWallet={false}
                 />
               ) : (
                 <>
@@ -211,6 +178,17 @@ function Header() {
             <nav className="flex items-center gap-4 lg:gap-6">
               {NAV_ITEMS.map((item) => {
                 if (item.type === "route") {
+                  if (item.external) {
+                    return (
+                      <a
+                        key={item.key}
+                        href={item.to}
+                        className={navClasses(false)}
+                      >
+                        {item.label}
+                      </a>
+                    );
+                  }
                   return (
                     <NavLink
                       key={item.key}
@@ -234,7 +212,6 @@ function Header() {
               <UserDropdown
                 profile={profile}
                 onLogout={logout}
-                showWallet={true}
               />
             ) : (
               <div className="flex items-center gap-2">

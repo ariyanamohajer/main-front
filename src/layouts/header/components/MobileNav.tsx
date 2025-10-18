@@ -31,7 +31,12 @@ import {
  */
 const TABS = [
   { key: "more", label: "بیشتر", icon: MoreHorizontal, more: true },
-  { key: "sim", to: "/sim", label: "سیم‌کارت", icon: CardSim },
+  {
+    key: "sim",
+    href: "https://panel.arianamohajer.ir/sim",
+    label: "سیم‌کارت",
+    icon: CardSim,
+  },
   {
     key: "wallet",
     to: "/wallet",
@@ -39,7 +44,12 @@ const TABS = [
     icon: Wallet,
     emphasized: true,
   },
-  { key: "products", to: "/products", label: "محصولات", icon: ShoppingBag },
+  {
+    key: "products",
+    href: "https://panel.arianamohajer.ir/products",
+    label: "محصولات",
+    icon: ShoppingBag,
+  },
   { key: "home", to: "/", label: "خانه", icon: Home },
 ];
 
@@ -61,7 +71,7 @@ function MobileNav() {
         dir="rtl"
       >
         <ul className="flex flex-row-reverse items-end px-2 py-2">
-          {TABS.map(({ key, to, label, icon: Icon, emphasized, more }) => (
+          {TABS.map(({ key, to, href, label, icon: Icon, emphasized, more }) => (
             <li key={key} className="flex-1 flex justify-center">
               {more ? (
                 <Sheet open={openMore} onOpenChange={setOpenMore}>
@@ -129,31 +139,52 @@ function MobileNav() {
                   </SheetContent>
                 </Sheet>
               ) : (
-                <NavLink
-                  to={to!}
-                  className={({ isActive }) =>
-                    [
-                      "flex flex-col items-center justify-center w-full text-xs px-2 py-1 rounded-md transition-colors",
-                      isActive
-                        ? "text-primary"
-                        : "text-foreground/70 hover:text-foreground",
-                    ].join(" ")
-                  }
-                  aria-label={label}
-                >
-                  <div
-                    className={[
-                      "relative flex items-center justify-center",
-                      emphasized
-                        ? "h-12 w-12 -mt-8 rounded-full bg-primary text-primary-foreground shadow-lg"
-                        : "h-6 w-6",
-                    ].join(" ")}
-                    aria-hidden="true"
+                href ? (
+                  <a
+                    href={href}
+                    className="flex flex-col items-center justify-center w-full text-xs px-2 py-1 rounded-md transition-colors text-foreground/70 hover:text-foreground"
+                    aria-label={label}
                   >
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <span className="mt-1 leading-none">{label}</span>
-                </NavLink>
+                    <div
+                      className={[
+                        "relative flex items-center justify-center",
+                        emphasized
+                          ? "h-12 w-12 -mt-8 rounded-full bg-primary text-primary-foreground shadow-lg"
+                          : "h-6 w-6",
+                      ].join(" ")}
+                      aria-hidden="true"
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className="mt-1 leading-none">{label}</span>
+                  </a>
+                ) : (
+                  <NavLink
+                    to={to!}
+                    className={({ isActive }) =>
+                      [
+                        "flex flex-col items-center justify-center w-full text-xs px-2 py-1 rounded-md transition-colors",
+                        isActive
+                          ? "text-primary"
+                          : "text-foreground/70 hover:text-foreground",
+                      ].join(" ")
+                    }
+                    aria-label={label}
+                  >
+                    <div
+                      className={[
+                        "relative flex items-center justify-center",
+                        emphasized
+                          ? "h-12 w-12 -mt-8 rounded-full bg-primary text-primary-foreground shadow-lg"
+                          : "h-6 w-6",
+                      ].join(" ")}
+                      aria-hidden="true"
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className="mt-1 leading-none">{label}</span>
+                  </NavLink>
+                )
               )}
             </li>
           ))}

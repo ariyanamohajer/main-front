@@ -72,10 +72,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     checkAuthStatus();
   }, []);
 
-  // Login function (persists tokens as session-only)
+  // Login function (persists tokens with provided expiration)
   const login = (userData: User) => {
     try {
-      // 🔐 session-only tokens => no Expires set on cookies
+      // Persist auth cookies across sessions using backend expiry values
       storeTokenData(
         {
           token: userData.token,
@@ -83,15 +83,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           expiration: userData.expiration, // optional (ignored if sessionOnly)
           refreshTokenExpiration: userData.refreshTokenExpiration, // optional
         },
-        { sessionOnly: true }
+        { sessionOnly: false }
       );
 
       // Non-sensitive profile bits for quick hydration
-      storeUserData({
-        phone: userData.phone,
-        fName: userData.fName,
-        lName: userData.lName,
-      });
+      storeUserData(
+        {
+          phone: userData.phone,
+          fName: userData.fName,
+          lName: userData.lName,
+        },
+        userData.refreshTokenExpiration || userData.expiration
+      );
 
       setUser(userData);
     } catch (error) {

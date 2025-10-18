@@ -125,12 +125,15 @@ export const clearTokenData = (): void => {
 };
 
 /** Store non-sensitive user data */
-export const storeUserData = (userData: {
-  phone: string;
-  fName?: string;
-  lName?: string;
-}) => {
-  setCookie("user_data", JSON.stringify(userData));
+export const storeUserData = (
+  userData: {
+    phone: string;
+    fName?: string;
+    lName?: string;
+  },
+  expirationDate?: string
+) => {
+  setCookie("user_data", JSON.stringify(userData), expirationDate);
 };
 
 export const getUserData = (): {
