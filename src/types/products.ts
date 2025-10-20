@@ -91,6 +91,41 @@ export interface ProductComment {
   answers: ProductComment[];
 }
 
+export interface LastProductCommentProduct {
+  name: string;
+  price: number;
+  status: number;
+  categoryId: number;
+  comments: null;
+}
+
+export interface LastProductComment {
+  commentId: string;
+  text: string;
+  star: number;
+  userId: string;
+  user: null;
+  productId: string;
+  product: LastProductCommentProduct | null;
+  status: boolean;
+  insertTime: string;
+  lastUpdate: string | null;
+  parentId: string | null;
+  userPhone: string;
+  userName: string;
+  userAvatar: string;
+  answers: LastProductComment[];
+}
+
+export interface GetLastCommentsResponse {
+  result: {
+    productComments: LastProductComment[];
+  };
+  success: boolean;
+  message: string;
+  code: number;
+}
+
 export interface ProductQuestion {
   questionId: string;
   text: string;

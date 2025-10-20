@@ -17,6 +17,7 @@ function ServiceCard({
   bg,
   shadow,
   delay = 0,
+  href,
 }: {
   img: string;
   line1: string;
@@ -24,24 +25,27 @@ function ServiceCard({
   bg: string; // Tailwind bg class (e.g., 'bg-pink-500')
   shadow: string; // Tailwind shadow-tone (e.g., 'shadow-pink-300/50')
   delay?: number;
+  href: string;
 }) {
   return (
-    <motion.div
+    <motion.a
       initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.4, delay }}
       whileHover={{ y: -4 }}
       className={[
-        "relative overflow-hidden rounded-2xl p-4  flex items-center justify-between",
+        "relative overflow-hidden rounded-2xl p-4 flex items-center justify-between",
         bg,
         "text-white",
         "ring-1 ring-black/5",
         "shadow-lg", // base
+        "no-underline",
       ].join(" ")}
       style={{
         boxShadow: "0 8px 20px rgba(0,0,0,0.08)", // soft global shadow
       }}
+      href={href}
     >
       <div className="min-h-[84px] flex flex-col justify-start">
         <h3 className="text-[15px] md:text-base font-semibold drop-shadow-sm">
@@ -61,7 +65,7 @@ function ServiceCard({
           shadow,
         ].join(" ")}
       />
-    </motion.div>
+    </motion.a>
   );
 }
 
@@ -138,6 +142,7 @@ export default function ServicesSection() {
                 bg="bg-fuchsia-600"
                 shadow="bg-fuchsia-500/40"
                 delay={0.02}
+                href="https://panel.arianamohajer.ir/products?categoryId=2"
               />
               <ServiceCard
                 img={PubgImg}
@@ -146,6 +151,7 @@ export default function ServicesSection() {
                 bg="bg-sky-500"
                 shadow="bg-sky-400/40"
                 delay={0.08}
+                href="https://panel.arianamohajer.ir/products?categoryId=9"
               />
               <ServiceCard
                 img={SimImg}
@@ -154,6 +160,7 @@ export default function ServicesSection() {
                 bg="bg-lime-500"
                 shadow="bg-lime-400/40"
                 delay={0.14}
+                href="https://panel.arianamohajer.ir/sim"
               />
               <ServiceCard
                 img={simImg2}
@@ -162,6 +169,7 @@ export default function ServicesSection() {
                 bg="bg-primary"
                 shadow="bg-lime-400/40"
                 delay={0.14}
+                href="https://panel.arianamohajer.ir/sim"
               />
             </div>
           </div>

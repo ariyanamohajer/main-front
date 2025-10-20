@@ -3,6 +3,7 @@ import type {
   ProductsResponse,
   ProductsQueryParams,
   SingleProductResponse,
+  GetLastCommentsResponse,
 } from "@/types";
 
 export const productsService = {
@@ -47,6 +48,16 @@ export const productsService = {
       `${endpoints.products.getProduct}?${queryParams.toString()}`
     );
 
+    return response.data;
+  },
+
+  /**
+   * Get the latest product comments
+   */
+  getLastComments: async (): Promise<GetLastCommentsResponse> => {
+    const response = await axiosInstance.get<GetLastCommentsResponse>(
+      endpoints.comment.getLastComment
+    );
 
     return response.data;
   },

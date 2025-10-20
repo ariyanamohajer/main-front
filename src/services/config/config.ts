@@ -56,4 +56,7 @@ export const endpoints = {
     getTransactions: "/Wallet/GetWalletTransactions",
     getBankAccounts: "/Wallet/GetBankAccounts",
   },
+  comment: {
+    getLastComment: "/Product/GetLastComments",
+  },
 };

@@ -1,61 +1,21 @@
-// src/sections/TestimonialsSection.tsx
 import * as React from "react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UserRound, Star } from "lucide-react";
-
-/* ----------------------------- Demo data ----------------------------- */
-// Replace with your real reviews or fetch from API.
-type Testimonial = {
-  id: string;
-  name: string;
-  rating: 1 | 2 | 3 | 4 | 5;
-  bullets: string[];
-};
-
-const TESTIMONIALS: Testimonial[] = [
-  {
-    id: "t1",
-    name: "حسام NG.",
-    rating: 5,
-    bullets: [
-      "کیفیت خدمات عالی بود.",
-      "پاسخ‌گویی دقیق و محترمانه.",
-      "حتماً دوباره استفاده می‌کنم.",
-    ],
-  },
-  {
-    id: "t2",
-    name: "NG.حسام",
-    rating: 4,
-    bullets: [
-      "فرآیند ساده و شفاف بود.",
-      "قیمت‌گذاری منصفانه.",
-      "ارسال سریع و به‌موقع.",
-    ],
-  },
-  {
-    id: "t3",
-    name: "حسام NG.",
-    rating: 5,
-    bullets: [
-      "تجربه خرید آسان و مطمئن.",
-      "پشتیبانی سریع و حرفه‌ای.",
-      "بسته‌بندی مرتب و تمیز.",
-    ],
-  },
-];
+import { useGetLastComment } from "@/hooks/comments/useGetLastComment";
 
 /* --------------------------- Small UI helpers ------------------------ */
 function RatingStars({ rating = 5 }: { rating?: number }) {
+  const normalized = Math.max(0, Math.min(5, Math.round(rating)));
+
   return (
     <div className="inline-flex items-center gap-1 text-yellow-500 dark:text-yellow-400">
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
           className="h-4 w-4"
-          fill={i < rating ? "currentColor" : "none"}
+          fill={i < normalized ? "currentColor" : "none"}
         />
       ))}
     </div>
@@ -82,12 +42,14 @@ function Title({ children }: { children: React.ReactNode }) {
 function TestimonialBubbleCard({
   name,
   rating,
-  bullets,
+  text,
+  productName,
   index,
 }: {
   name: string;
   rating: number;
-  bullets: string[];
+  text: string;
+  productName?: string | null;
   index: number;
 }) {
   return (
@@ -96,7 +58,6 @@ function TestimonialBubbleCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
       transition={{ duration: 0.45, delay: index * 0.06 }}
-      
       className="relative bg-white dark:bg-background shadow-lg rounded-lg"
       dir="rtl"
     >
@@ -141,6 +102,11 @@ function TestimonialBubbleCard({
 
           <div className="flex items-center gap-2 text-sm md:text-[15px]">
             <strong className="font-semibold">{name}</strong>
+            {productName ? (
+              <span className="text-xs text-muted-foreground">
+                {productName}
+              </span>
+            ) : null}
             <RatingStars rating={rating} />
           </div>
         </div>
@@ -150,12 +116,9 @@ function TestimonialBubbleCard({
 
       {/* Content */}
       <div className="px-9 pb-6">
-        <ul className="list-disc pr-4 md:pr-5 space-y-1.5 text-sm leading-7 text-foreground/90">
-          {bullets.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
-          <li>…</li>
-        </ul>
+        <p className="text-sm leading-7 text-foreground/90 whitespace-pre-line">
+          {text}
+        </p>
       </div>
     </motion.div>
   );
@@ -163,31 +126,59 @@ function TestimonialBubbleCard({
 
 /* ----------------------------- The section --------------------------- */
 export default function TestimonialsSection() {
+  const { data, isLoading, isError, error } = useGetLastComment();
+  const comments = data?.result?.productComments ?? [];
+  const limitedComments = comments.slice(0, 3);
+  const errorMessage =
+    error instanceof Error
+      ? error.message
+      : "خطا در دریافت نظرات. دوباره تلاش کنید.";
+
+  let content: React.ReactNode;
+
+  if (isLoading) {
+    content = Array.from({ length: 3 }).map((_, i) => (
+      <div
+        key={`loading-${i}`}
+        className="h-48 rounded-lg border border-dashed border-border/60 bg-muted/40 animate-pulse"
+      />
+    ));
+  } else if (isError) {
+    content = (
+      <div className="col-span-full text-center text-sm text-destructive">
+        {errorMessage}
+      </div>
+    );
+  } else if (!comments.length) {
+    content = (
+      <div className="col-span-full text-center text-sm text-muted-foreground">
+        هنوز نظری ثبت نشده است.
+      </div>
+    );
+  } else {
+    content = limitedComments.map((comment, i) => (
+      <TestimonialBubbleCard
+        key={comment.commentId}
+        name={comment.userName || "کاربر"}
+        rating={Number(comment.star ?? 0)}
+        text={comment.text}
+        productName={comment.product?.name}
+        index={i}
+      />
+    ));
+  }
+
   return (
-    <section className="py-16 md:py-24 bg-background" id="testimonials" dir="rtl">
+    <section
+      className="py-16 md:py-24 bg-background"
+      id="testimonials"
+      dir="rtl"
+    >
       <div className="container mx-auto px-4 md:px-6">
         <Title>دوستانی که به ما اعتماد کردند</Title>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
-          {TESTIMONIALS.map((t, i) => (
-            <TestimonialBubbleCard
-              key={t.id}
-              name={t.name}
-              rating={t.rating}
-              bullets={t.bullets}
-              index={i}
-            />
-          ))}
-        </div>
-
-        <div className="mt-8">
-          <Button
-            variant="outline"
-            className="border-border text-foreground hover:text-primary hover:border-primary"
-            asChild
-          >
-            <a href="/reviews">دیدن همه نظرات</a>
-          </Button>
+          {content}
         </div>
       </div>
     </section>
