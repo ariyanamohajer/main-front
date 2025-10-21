@@ -32,6 +32,10 @@ function PhoneHero() {
 
 export default function Introduction() {
   const [fallbackOpen, setFallbackOpen] = React.useState(false);
+  const APK_DOWNLOAD_URL =
+    "https://api.panel.arianamohajer.ir/api/Download/DownloadApk";
+  const cafeBazaarLink = "https://cafebazaar.ir/app/com.yourapp";
+  const myketLink = "https://myket.ir/app/com.yourapp";
 
   // Optional: hide the button entirely if app is already installed.
   // const alreadyInstalled = isRunningInPWA() || isPWAAlreadyInstalledFlag();
@@ -85,15 +89,57 @@ export default function Introduction() {
               و پرداخت امن، برای تجربه‌ای راحت و بی‌دغدغه.
             </p>
 
-            <div className="mt-6 flex justify-center md:justify-start">
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 md:justify-start">
               <Button
                 size="lg"
                 onClick={onDownloadClick}
                 className="flex-row-reverse gap-2 cursor-pointer bg-destructive text-white hover:bg-destructive/90"
               >
-                دانلود اپلیکیشن آریانا مهاجر
+                نصب اپلیکیشن (نسخه PWA)
                 <Download className="h-5 w-5" />
               </Button>
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="flex-row-reverse gap-2 border-destructive text-destructive hover:bg-destructive/10"
+              >
+                <a
+                  href={APK_DOWNLOAD_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download
+                >
+                  دانلود مستقیم
+                  <Download className="h-5 w-5" />
+                </a>
+              </Button>
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-4 md:justify-start">
+              <a
+                href={cafeBazaarLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform duration-150 hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive"
+              >
+                <img
+                  src="/bazar.png"
+                  alt="دانلود از کافه بازار"
+                  className="h-12 w-auto"
+                />
+              </a>
+              <a
+                href={myketLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform duration-150 hover:scale-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive"
+              >
+                <img
+                  src="/myket.png"
+                  alt="دانلود از مایکت"
+                  className="h-12 w-auto"
+                />
+              </a>
             </div>
           </motion.div>
         </div>
@@ -107,5 +153,3 @@ export default function Introduction() {
     </section>
   );
 }
-
-
