@@ -34,7 +34,7 @@ export default function Introduction() {
   const [fallbackOpen, setFallbackOpen] = React.useState(false);
   const APK_DOWNLOAD_URL =
     "https://api.panel.arianamohajer.ir/api/Download/DownloadApk";
-  const cafeBazaarLink = "https://cafebazaar.ir/app/com.yourapp";
+  const cafeBazaarLink = "https://cafebazaar.ir/app/co.median.android.zpzkond";
   const myketLink = "https://myket.ir/app/com.yourapp";
 
   // Optional: hide the button entirely if app is already installed.
